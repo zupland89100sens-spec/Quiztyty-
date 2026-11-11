@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎮 QuizMaster 4ème - Multijoueur</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Trebuchet MS', sans-serif; }
+  body { background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; overflow-x: hidden; }
+  .container { background: rgba(255,255,255,0.97); border-radius: 30px; padding: 35px; max-width: 800px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.3); animation: pop 0.5s ease; max-height: 95vh; overflow-y: auto; }
+  @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  h1 { text-align: center; color: #764ba2; font-size: 2em; margin-bottom: 10px; text-shadow: 2px 2px 0 #f093fb; }
+  .subtitle { text-align: center; color: #666; margin-bottom: 20px; }
+  .start-screen { text-align: center; }
+  .start-screen p { font-size: 1em; color: #444; margin: 12px 0; line-height: 1.6; }
+  .mascot { font-size: 4em; animation: bounce 1s infinite; }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+  .section-title { font-size: 1.1em; color: #764ba2; font-weight: bold; margin: 20px 0 10px 0; text-align: left; }
+
+  /* CHOIX (joueurs et difficulté) */
+  .choix-groupe { display: flex; justify-content: center; gap: 12px; margin: 15px 0; flex-wrap: wrap; }
+  .nb-btn { background: white; border: 3px solid #667eea; color: #333; padding: 12px 20px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 1em; transition: all 0.2s; min-width: 110px; }
+  .nb-btn small { display: block; font-weight: normal; font-size: 0.8em; opacity: 0.8; margin-top: 3px; }
+  .nb-btn:hover { background: #667eea; color: white; transform: translateY(-3px); }
+  .nb-btn.selected { background: #764ba2; color: white; border-color: #764ba2; transform: scale(1.05); }
+
+  /* NOMS */
+  .noms-joueurs { display: grid; gap: 10px; margin: 15px 0; }
+  .joueur-input { display: flex; align-items: center; gap: 10px; background: #f5f5f5; padding: 10px 15px; border-radius: 15px; }
+  .joueur-input .avatar { font-size: 1.5em; width: 40px; text-align: center; }
+  .joueur-input input { flex: 1; padding: 8px 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 1em; background: white; }
+  .joueur-input input:focus { outline: none; border-color: #764ba2; }
+
+  /* MATIÈRES */
+  .matiere-choix { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 15px 0; }
+  .matiere-btn { background: white; border: 3px solid #667eea; color: #333; padding: 12px; border-radius: 15px; cursor: pointer; font-weight: bold; font-size: 0.95em; transition: all 0.2s; }
+  .matiere-btn:hover { background: #667eea; color: white; transform: translateY(-3px); }
+  .matiere-btn.selected { background: #764ba2; color: white; border-color: #764ba2; }
+
+  button.main-btn { background: linear-gradient(135deg, #f093fb, #f5576c); color: white; border: none; padding: 14px 35px; font-size: 1.1em; border-radius: 50px; cursor: pointer; font-weight: bold; margin-top: 20px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 5px 15px rgba(245,87,108,0.4); }
+  button.main-btn:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 25px rgba(245,87,108,0.6); }
+  button.main-btn:active { transform: scale(0.98); }
+
+  /* PROGRESSION */
+  .progress-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 10px; }
+  .progress-bar { flex: 1; height: 18px; background: #e0e0e0; border-radius: 50px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #4facfe, #00f2fe); border-radius: 50px; transition: width 0.4s ease; }
+  .timer-badge { background: #f5576c; color: white; padding: 7px 15px; border-radius: 50px; font-weight: bold; font-size: 0.9em; white-space: nowrap; }
+  .timer-badge.warning { background: #ff9800; animation: pulse 0.5s infinite; }
+  @keyframes pulse { 50% { transform: scale(1.1); } }
+
+  /* JOUEURS */
+  .joueurs-panel { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
+  .joueur-card { display: flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 20px; background: #f0f0f0; font-size: 0.9em; font-weight: bold; color: #666; border: 3px solid transparent; transition: all 0.3s; }
+  .joueur-card.active { background: linear-gradient(135deg, #ffd700, #ffb300); color: #333; transform: scale(1.08); box-shadow: 0 4px 12px rgba(255,152,0,0.4); }
+  .joueur-card .avatar-small { font-size: 1.2em; }
+  .joueur-card .pts { opacity: 0.85; }
+
+  /* QUESTION */
+  .question-meta { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.9em; color: #666; flex-wrap: wrap; gap: 8px; }
+  .matiere-tag, .niveau-tag { padding: 5px 15px; border-radius: 20px; font-weight: bold; }
+  .matiere-tag { background: #ffe0f0; color: #c2185b; }
+  .niveau-tag { background: #e8f5e9; color: #2e7d32; }
+  .tour-indicator { font-size: 1.1em; font-weight: bold; text-align: center; margin-bottom: 12px; padding: 10px; border-radius: 12px; background: #fff8e1; color: #e65100; }
+  .question-text { font-size: 1.3em; color: #333; margin-bottom: 20px; font-weight: bold; line-height: 1.4; }
+  .answers { display: grid; gap: 10px; }
+  .answer-btn { background: white; border: 3px solid #667eea; color: #333; padding: 14px 18px; font-size: 1em; border-radius: 15px; cursor: pointer; text-align: left; transition: all 0.2s; font-weight: bold; }
+  .answer-btn:hover:not(:disabled) { background: #667eea; color: white; transform: translateX(8px); }
+  .answer-btn.correct { background: #4caf50 !important; color: white !important; border-color: #4caf50 !important; animation: pulse 0.5s; }
+  .answer-btn.wrong { background: #f44336 !important; color: white !important; border-color: #f44336 !important; animation: shake 0.5s; }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+  .feedback { margin-top: 18px; padding: 15px; border-radius: 15px; font-weight: bold; text-align: center; line-height: 1.5; }
+  .feedback.good { background: #d4edda; color: #2e7d32; }
+  .feedback.bad { background: #f8d7da; color: #c62828; }
+  .explication { margin-top: 15px; padding: 15px; background: #e3f2fd; border-left: 5px solid #2196f3; border-radius: 10px; font-size: 0.95em; color: #1565c0; line-height: 1.5; }
+  .explication strong { color: #0d47a1; }
+
+  /* BILAN */
+  .bilan { text-align: center; }
+  .bilan-emoji { font-size: 4em; }
+  .bilan-title { font-size: 1.8em; color: #764ba2; margin: 10px 0; }
+  .podium { display: flex; justify-content: center; align-items: flex-end; gap: 10px; margin: 25px 0; min-height: 180px; }
+  .podium-item { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; max-width: 130px; }
+  .podium-item .avatar-podium { font-size: 2.5em; }
+  .podium-item .nom-podium { font-weight: bold; color: #333; font-size: 0.95em; word-break: break-word; }
+  .podium-item .score-podium { font-size: 1.3em; font-weight: bold; }
+  .podium-item .barre { width: 100%; border-radius: 12px 12px 0 0; display: flex; align-items: flex-start; justify-content: center; padding-top: 8px; color: white; font-weight: bold; font-size: 1.2em; }
+  .podium-item.p1 .barre { background: linear-gradient(180deg, #ffd700, #ffb300); height: 140px; }
+  .podium-item.p2 .barre { background: linear-gradient(180deg, #b0bec5, #90a4ae); height: 110px; }
+  .podium-item.p3 .barre { background: linear-gradient(180deg, #d7a86e, #b0763c); height: 85px; }
+  .podium-item.p4 .barre { background: linear-gradient(180deg, #a5d6a7, #81c784); height: 65px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 20px 0; }
+  .stat-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 18px; border-radius: 18px; }
+  .stat-card .value { font-size: 1.8em; font-weight: bold; }
+  .stat-card .label { font-size: 0.85em; opacity: 0.9; }
+  .matiere-detail { display: flex; justify-content: space-between; padding: 10px 15px; background: #f5f5f5; margin: 8px 0; border-radius: 10px; font-size: 0.95em; }
+  .stars { font-size: 1.8em; margin: 10px 0; }
+  .message-final { font-size: 1.1em; color: #555; margin: 12px 0; font-weight: bold; }
+  .hidden { display: none !important; }
+  .confetti { position: fixed; width: 10px; height: 10px; animation: fall 3s linear forwards; z-index: 999; }
+  @keyframes fall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ÉCRAN D'ACCUEIL -->
+  <div id="startScreen" class="start-screen">
+    <div class="mascot">🦊</div>
+    <h1>QuizMaster 4ème</h1>
+    <p class="subtitle">Révise en t'amusant, seul ou à plusieurs !</p>
+
+    <div class="section-title">👥 Nombre de joueurs</div>
+    <div class="choix-groupe" id="nbJoueursChoix">
+      <button class="nb-btn selected" data-nb="1">🙋 1 joueur</button>
+      <button class="nb-btn" data-nb="2">👥 2 joueurs</button>
+      <button class="nb-btn" data-nb="3">👨‍👩‍👧 3 joueurs</button>
+      <button class="nb-btn" data-nb="4">👨‍👩‍👧‍👦 4 joueurs</button>
+    </div>
+
+    <div class="section-title">✏️ Noms des joueurs</div>
+    <div class="noms-joueurs" id="nomsJoueurs"></div>
+
+    <div class="section-title">🎚️ Niveau de difficulté</div>
+    <div class="choix-groupe" id="niveauChoix">
+      <button class="nb-btn selected" data-niveau="1">🌱 Facile<small>30 s · 10 pts</small></button>
+      <button class="nb-btn" data-niveau="2">⚡ Moyen<small>25 s · 20 pts</small></button>
+      <button class="nb-btn" data-niveau="3">🔥 Difficile<small>20 s · 30 pts</small></button>
+    </div>
+
+    <div class="section-title">📚 Choisis une matière</div>
+    <div class="matiere-choix" id="matiereChoix">
+      <button class="matiere-btn selected" data-matiere="toutes">🎲 Toutes matières</button>
+      <button class="matiere-btn" data-matiere="Français">📖 Français</button>
+      <button class="matiere-btn" data-matiere="Mathématiques">🔢 Maths</button>
+      <button class="matiere-btn" data-matiere="Histoire">🏛️ Histoire</button>
+      <button class="matiere-btn" data-matiere="Géographie">🌍 Géographie</button>
+      <button class="matiere-btn" data-matiere="Sciences">🔬 SVT</button>
+      <button class="matiere-btn" data-matiere="Physique-Chimie">⚗️ Physique</button>
+      <button class="matiere-btn" data-matiere="Anglais">🇬🇧 Anglais</button>
+      <button class="matiere-btn" data-matiere="EMC">⚖️ EMC</button>
+    </div>
+
+    <button class="main-btn" onclick="startQuiz()">🚀 C'est parti !</button>
+  </div>
+
+  <!-- ÉCRAN DU QUIZ -->
+  <div id="quizScreen" class="hidden">
+    <div class="progress-container">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="timer-badge" id="timerBadge">⏱ 25s</span>
+    </div>
+    <div class="joueurs-panel" id="joueursPanel"></div>
+    <div class="tour-indicator" id="tourIndicator"></div>
+    <div class="question-meta">
+      <span class="matiere-tag" id="matiereTag"></span>
+      <span class="niveau-tag" id="niveauTag"></span>
+      <span id="questionCounter"></span>
+    </div>
+    <div class="question-text" id="questionText"></div>
+    <div class="answers" id="answersContainer"></div>
+    <div class="feedback hidden" id="feedbackBox"></div>
+    <div class="explication hidden" id="explicationBox"></div>
+    <div style="text-align:center;">
+      <button class="main-btn hidden" id="nextBtn" onclick="nextQuestion()">➡️ Question suivante</button>
+    </div>
+  </div>
+
+  <!-- ÉCRAN BILAN -->
+  <div id="bilanScreen" class="hidden bilan">
+    <div class="bilan-emoji" id="bilanEmoji">🏆</div>
+    <div class="bilan-title" id="bilanTitle">Classement final</div>
+    <div class="stars" id="starsDisplay"></div>
+    <div class="message-final" id="messageFinal"></div>
+    <div class="podium" id="podium"></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="value" id="finalScore">0</div><div class="label">Score total</div></div>
+      <div class="stat-card"><div class="value" id="finalCorrect">0/0</div><div class="label">Bonnes réponses</div></div>
+      <div class="stat-card"><div class="value" id="finalPercent">0%</div><div class="label">Réussite</div></div>
+    </div>
+    <h3 style="color:#764ba2; margin-top:15px;">📊 Détail par joueur</h3>
+    <div id="detailsJoueurs"></div>
+    <h3 style="color:#764ba2; margin-top:15px;">📚 Détail par matière</h3>
+    <div id="matiereDetails"></div>
+    <button class="main-btn" onclick="restartQuiz()">🔄 Rejouer</button>
+  </div>
+
+</div>
+
+<script>
+// ===== BANQUE DE QUESTIONS (n = niveau : 1 facile, 2 moyen, 3 difficile) =====
+const QUESTIONS = [
+  // FRANÇAIS
+  {m:"Français",n:1,q:"Qui a écrit « Les Misérables » ?",a:["Molière","Victor Hugo","Émile Zola","Voltaire"],c:1,e:"Victor Hugo (1802-1885) est l'auteur des Misérables, un roman majeur du XIXe siècle."},
+  {m:"Français",n:1,q:"Quel est le participe passé du verbe « prendre » ?",a:["Prené","Pris","Prendu","Prit"],c:1,e:"Le participe passé de « prendre » est « pris » : j'ai pris, il était pris."},
+  {m:"Français",n:1,q:"Quel est le contraire de « rapide » ?",a:["Lent","Vite","Court","Fort"],c:0,e:"« Lent » est le contraire de « rapide »."},
+  {m:"Français",n:1,q:"Quelle est la nature du mot « chat » dans « Le chat dort » ?",a:["Verbe","Nom commun","Adjectif","Adverbe"],c:1,e:"« Chat » est un nom commun : il désigne un animal."},
+  {m:"Français",n:2,q:"Dans « Il court rapidement », quelle est la fonction de « rapidement » ?",a:["Sujet","Complément circonstanciel de manière","COD","Attribut"],c:1,e:"« Rapidement » répond à la question « comment ? » : c'est un complément circonstanciel de manière."},
+  {m:"Français",n:2,q:"Qu'est-ce qu'une métaphore ?",a:["Une comparaison avec « comme »","Une image sans outil de comparaison","Une répétition de sons","Un mot inventé"],c:1,e:"La métaphore rapproche deux éléments sans « comme ». Exemple : « Cet homme est un lion »."},
+  {m:"Français",n:2,q:"Dans « Les enfants jouent dans le jardin », quel est le sujet ?",a:["Les enfants","Jouent","Le jardin","Dans le jardin"],c:0,e:"Le sujet répond à « qui est-ce qui joue ? » : les enfants."},
+  {m:"Français",n:2,q:"Quel est le type de la phrase : « Ferme la porte. » ?",a:["Interrogative","Impérative","Exclamative","Déclarative"],c:1,e:"C'est une phrase impérative : elle donne un ordre, à l'impératif."},
+  {m:"Français",n:3,q:"Quel est le mode du verbe dans « Il faut que tu viennes » ?",a:["Indicatif","Subjonctif","Conditionnel","Impératif"],c:1,e:"Après « il faut que », le verbe se met au subjonctif : que tu viennes."},
+  {m:"Français",n:3,q:"Dans « Le livre que je lis est passionnant », quelle est la nature de « que je lis » ?",a:["Proposition subordonnée relative","Proposition conjonctive","Complément d'objet direct","Attribut du sujet"],c:0,e:"« Que je lis » complète le nom « livre » : c'est une subordonnée relative."},
+  {m:"Français",n:3,q:"Quelle est la terminaison de la 1re personne du pluriel du passé simple de « chanter » ?",a:["-âmes","-âtes","-èrent","-ai"],c:0,e:"Au passé simple, « nous chantâmes » : terminaison -âmes."},
+  {m:"Français",n:3,q:"Qu'est-ce qu'un oxymore ?",a:["Association de deux mots de sens contraires","Répétition d'un mot en début de phrases","Comparaison avec « comme »","Exagération volontaire"],c:0,e:"Exemple : « un silence assourdissant ». Les deux mots s'opposent dans leur sens."},
+
+  // MATHÉMATIQUES
+  {m:"Mathématiques",n:1,q:"Combien font 7 × 8 ?",a:["54","56","63","48"],c:1,e:"7 × 8 = 56."},
+  {m:"Mathématiques",n:1,q:"Combien font 0,5 + 0,25 ?",a:["0,30","0,75","0,55","0,70"],c:1,e:"0,50 + 0,25 = 0,75."},
+  {m:"Mathématiques",n:1,q:"Combien vaut 10 % de 250 ?",a:["20","25","30","40"],c:1,e:"10 % de 250 = 250 ÷ 10 = 25."},
+  {m:"Mathématiques",n:1,q:"Quelle est la racine carrée de 81 ?",a:["7","8","9","10"],c:2,e:"9 × 9 = 81, donc √81 = 9."},
+  {m:"Mathématiques",n:2,q:"Combien font 5 × 3 + 2 ?",a:["15","17","25","10"],c:1,e:"La multiplication passe avant l'addition : 15 + 2 = 17."},
+  {m:"Mathématiques",n:2,q:"Quelle est la médiane de la série : 3, 7, 8, 12, 15 ?",a:["7","8","12","9"],c:1,e:"La médiane est la valeur du milieu d'une série rangée : 8."},
+  {m:"Mathématiques",n:2,q:"Que vaut (-3) × (-4) ?",a:["-12","12","-7","7"],c:1,e:"Le produit de deux nombres négatifs est positif : +12."},
+  {m:"Mathématiques",n:2,q:"Un article coûte 40 €, avec 25 % de réduction. Quel est son prix ?",a:["10 €","30 €","35 €","25 €"],c:1,e:"25 % de 40 = 10 €. Prix final : 40 − 10 = 30 €."},
+  {m:"Mathématiques",n:3,q:"Quel est le développement de (x + 3)² ?",a:["x² + 9","x² + 6x + 9","x² + 3x + 9","2x + 6"],c:1,e:"Identité remarquable : (a + b)² = a² + 2ab + b², donc x² + 6x + 9."},
+  {m:"Mathématiques",n:3,q:"Quel est le développement de 3(2x − 5) ?",a:["6x − 15","6x − 5","5x − 15","6x + 15"],c:0,e:"3 × 2x = 6x et 3 × (−5) = −15."},
+  {m:"Mathématiques",n:3,q:"Quelle est la solution de l'équation 2x + 6 = 14 ?",a:["x = 4","x = 8","x = 10","x = 5"],c:0,e:"2x = 14 − 6 = 8, donc x = 4."},
+  {m:"Mathématiques",n:3,q:"Un triangle ABC est rectangle en A, avec AB = 3 cm et BC = 5 cm. Combien mesure AC ?",a:["4 cm","8 cm","√34 cm","2 cm"],c:0,e:"Pythagore : AC² = BC² − AB² = 25 − 9 = 16, donc AC = 4 cm."},
+
+  // HISTOIRE
+  {m:"Histoire",n:1,q:"En quelle année a eu lieu la Révolution française ?",a:["1789","1492","1815","1914"],c:0,e:"La Révolution française commence en 1789, avec la prise de la Bastille."},
+  {m:"Histoire",n:1,q:"Quelle fête nationale commémore la prise de la Bastille ?",a:["Le 14 juillet","Le 11 novembre","Le 8 mai","Le 1er mai"],c:0,e:"Le 14 juillet 1789, la prise de la Bastille marque le début de la Révolution."},
+  {m:"Histoire",n:1,q:"Qui était le roi de France au moment de la Révolution ?",a:["Louis XIV","Louis XVI","Napoléon","Henri IV"],c:1,e:"Louis XVI, renversé pendant la Révolution, est guillotiné en 1793."},
+  {m:"Histoire",n:1,q:"Quel homme politique a dirigé la France libre pendant la Seconde Guerre mondiale ?",a:["Charles de Gaulle","Georges Clemenceau","Napoléon III","Louis XIV"],c:0,e:"Charles de Gaulle incarne la France libre depuis Londres à partir de 1940."},
+  {m:"Histoire",n:2,q:"Quel événement marque le début de la Première Guerre mondiale ?",a:["L'attentat de Sarajevo","La prise de la Bastille","Le traité de Versailles","La bataille de Verdun"],c:0,e:"L'assassinat de l'archiduc François-Ferdinand à Sarajevo, le 28 juin 1914, déclenche la guerre."},
+  {m:"Histoire",n:2,q:"Qui a dirigé la France pendant la Première Guerre mondiale ?",a:["Napoléon III","Georges Clemenceau","Charles de Gaulle","Louis XVI"],c:1,e:"Georges Clemenceau, président du Conseil de 1917 à 1920, conduit la guerre jusqu'à la victoire."},
+  {m:"Histoire",n:2,q:"Qu'est-ce que la Renaissance ?",a:["Une guerre","Un mouvement artistique et intellectuel","Une maladie","Un roi"],c:1,e:"La Renaissance (XVe-XVIe siècles) est un renouveau artistique et scientifique inspiré de l'Antiquité."},
+  {m:"Histoire",n:2,q:"Quel traité met fin à la guerre de 1914-1918 avec l'Allemagne ?",a:["Traité de Versailles","Traité de Vienne","Traité d'Utrecht","Traité de Westphalie"],c:0,e:"Signé en 1919 à Versailles, il impose des conditions sévères à l'Allemagne."},
+  {m:"Histoire",n:3,q:"En quelle année les femmes obtiennent-elles le droit de vote en France ?",a:["1936","1944","1945","1958"],c:1,e:"Accordé par ordonnance en 1944, il est exercé pour la première fois en 1945."},
+  {m:"Histoire",n:3,q:"Quel roi signe l'édit de Nantes en 1598 ?",a:["Henri IV","Louis XIV","François Ier","Louis XIII"],c:0,e:"Henri IV accorde la liberté de culte aux protestants, mettant fin aux guerres de religion."},
+  {m:"Histoire",n:3,q:"Comment appelle-t-on la politique d'extermination des Juifs menée par le régime nazi ?",a:["La Shoah","La Terreur","La Fronde","La Commune"],c:0,e:"La Shoah désigne le génocide de six millions de Juifs pendant la Seconde Guerre mondiale."},
+  {m:"Histoire",n:3,q:"Qu'est-ce que la guerre froide ?",a:["Un conflit armé direct entre les États-Unis et l'URSS","Une rivalité politique et idéologique entre les États-Unis et l'URSS, sans affrontement direct","Un conflit entre l'Europe et l'Asie","Une guerre dans l'Arctique"],c:1,e:"De 1947 à 1991, les deux blocs s'affrontent sans guerre directe entre eux."},
+
+  // GÉOGRAPHIE
+  {m:"Géographie",n:1,q:"Quelle est la capitale de l'Italie ?",a:["Milan","Rome","Venise","Naples"],c:1,e:"Rome est la capitale de l'Italie."},
+  {m:"Géographie",n:1,q:"Quelle est la capitale de l'Espagne ?",a:["Madrid","Barcelone","Lisbonne","Séville"],c:0,e:"Madrid est la capitale de l'Espagne. Barcelone est sa grande ville catalane."},
+  {m:"Géographie",n:1,q:"Combien y a-t-il de continents sur Terre ?",a:["5","6","7","8"],c:2,e:"On compte 7 continents : Afrique, Amériques (Nord et Sud), Antarctique, Asie, Europe, Océanie."},
+  {m:"Géographie",n:1,q:"Quelle est la capitale de la France ?",a:["Lyon","Paris","Marseille","Bordeaux"],c:1,e:"Paris est la capitale de la France depuis le Moyen Âge."},
+  {m:"Géographie",n:2,q:"Quel est le plus long fleuve entièrement situé en France ?",a:["La Seine","Le Rhône","La Loire","La Garonne"],c:2,e:"La Loire mesure environ 1 000 km et ne sort jamais du territoire français."},
+  {m:"Géographie",n:2,q:"Qu'est-ce que la mondialisation ?",a:["La création de nouveaux pays","L'intensification des échanges entre les pays du monde","La fin des frontières","Une guerre mondiale"],c:1,e:"Elle désigne l'intensification des échanges de marchandises, de personnes et d'informations."},
+  {m:"Géographie",n:2,q:"Quel est le plus grand désert chaud du monde ?",a:["Le Gobi","Le Kalahari","Le Sahara","L'Atacama"],c:2,e:"Le Sahara, en Afrique du Nord, est le plus grand désert chaud du monde."},
+  {m:"Géographie",n:2,q:"Quelle est la langue la plus parlée au monde par ses locuteurs natifs ?",a:["L'anglais","Le mandarin","L'espagnol","L'hindi"],c:1,e:"Le mandarin est la langue maternelle du plus grand nombre de personnes."},
+  {m:"Géographie",n:3,q:"Que signifie le sigle IDH ?",a:["Indicateur de développement humain","Indice de démographie humaine","Index des dépenses des habitants","Indicateur de disparité humaine"],c:0,e:"L'IDH mesure le développement d'un pays à partir de la santé, de l'éducation et du niveau de vie."},
+  {m:"Géographie",n:3,q:"Quel courant marin chaud traverse l'Atlantique Nord vers l'Europe ?",a:["Le Gulf Stream","Le Kuroshio","Le Humboldt","Le Benguela"],c:0,e:"Le Gulf Stream réchauffe les côtes de l'Europe de l'Ouest."},
+  {m:"Géographie",n:3,q:"Quelle est la superficie approximative de la France métropolitaine ?",a:["550 000 km²","300 000 km²","800 000 km²","1 000 000 km²"],c:0,e:"La France métropolitaine couvre environ 550 000 km²."},
+  {m:"Géographie",n:3,q:"Qu'est-ce que l'urbanisation ?",a:["L'augmentation de la part de la population qui vit en ville","Le développement de l'agriculture","La construction de routes","Le retour des populations à la campagne"],c:0,e:"Elle désigne la croissance de la part urbaine dans la population totale."},
+
+  // SVT
+  {m:"Sciences",n:1,q:"Quel organe pompe le sang dans le corps ?",a:["Le foie","Le cerveau","Le cœur","Les poumons"],c:2,e:"Le cœur est un muscle qui fait circuler le sang dans tout le corps."},
+  {m:"Sciences",n:1,q:"Quel gaz les plantes absorbent-elles pour la photosynthèse ?",a:["Le dioxygène","Le dioxyde de carbone","L'azote","L'hélium"],c:1,e:"Les plantes absorbent du dioxyde de carbone (CO2) et rejettent du dioxygène."},
+  {m:"Sciences",n:1,q:"Combien de dents un adulte a-t-il en général ?",a:["28","32","24","36"],c:1,e:"Un adulte a en général 32 dents, dents de sagesse comprises."},
+  {m:"Sciences",n:1,q:"Quelle est la formule chimique de l'eau ?",a:["CO2","H2O","O2","NaCl"],c:1,e:"L'eau est formée de deux atomes d'hydrogène et d'un atome d'oxygène : H2O."},
+  {m:"Sciences",n:2,q:"Quel est le rôle des alvéoles pulmonaires ?",a:["Filtrer le sang","Permettre les échanges gazeux","Digérer les aliments","Produire des hormones"],c:1,e:"C'est là que l'oxygène passe dans le sang et que le CO2 en sort."},
+  {m:"Sciences",n:2,q:"Quelle est la différence entre météo et climat ?",a:["Aucune","La météo est à court terme, le climat à long terme","Le climat change tous les jours","La météo ne concerne que la pluie"],c:1,e:"La météo décrit le temps qu'il fait ; le climat décrit les tendances sur de longues périodes."},
+  {m:"Sciences",n:2,q:"Combien d'os environ compte le squelette d'un adulte ?",a:["206","150","300","80"],c:0,e:"Le squelette d'un adulte compte environ 206 os."},
+  {m:"Sciences",n:2,q:"Quelle est la fonction principale du foie ?",a:["Produire la bile et filtrer le sang","Pomper le sang dans le corps","Échanger l'oxygène et le CO2","Produire les globules blancs"],c:0,e:"Le foie produit la bile, participe à la digestion et filtre le sang."},
+  {m:"Sciences",n:3,q:"Quel est le rôle des chromosomes ?",a:["Transporter l'oxygène","Porter l'information génétique","Digérer les aliments","Produire de l'énergie"],c:1,e:"Les chromosomes contiennent l'ADN, qui porte l'information génétique."},
+  {m:"Sciences",n:3,q:"Quelle est la différence entre une cellule végétale et une cellule animale ?",a:["La cellule végétale a une paroi et des chloroplastes","Aucune","La cellule animale fait la photosynthèse","La cellule végétale n'a pas de noyau"],c:0,e:"La cellule végétale possède une paroi cellulosique et des chloroplastes, absents de la cellule animale."},
+  {m:"Sciences",n:3,q:"Que produit la photosynthèse ?",a:["Du dioxygène et des sucres","Du CO2 et de l'eau","De l'azote","Des protéines uniquement"],c:0,e:"Grâce à la lumière, la plante produit du dioxygène et des sucres."},
+  {m:"Sciences",n:3,q:"Qu'est-ce qu'un gène ?",a:["Une portion d'ADN qui code un caractère héréditaire","Un type de cellule","Un organe","Une hormone"],c:0,e:"Un gène est une portion d'ADN qui code un caractère transmis par l'hérédité."},
+
+  // PHYSIQUE-CHIMIE
+  {m:"Physique-Chimie",n:1,q:"Quelle est l'unité de mesure de la masse ?",a:["Le litre","Le mètre","Le kilogramme","Le newton"],c:2,e:"La masse se mesure en kilogrammes (kg)."},
+  {m:"Physique-Chimie",n:1,q:"Quelle est l'unité de longueur ?",a:["Le litre","Le mètre","Le kilogramme","La seconde"],c:1,e:"La longueur se mesure en mètres (m)."},
+  {m:"Physique-Chimie",n:1,q:"Quel est le symbole chimique de l'or ?",a:["Or","Ag","Au","Go"],c:2,e:"L'or a pour symbole Au, du latin aurum."},
+  {m:"Physique-Chimie",n:1,q:"Combien de litres contient 1 m³ ?",a:["10 L","100 L","1 000 L","10 000 L"],c:2,e:"1 m³ = 1 000 dm³ = 1 000 L."},
+  {m:"Physique-Chimie",n:2,q:"Quelle est la formule de la vitesse ?",a:["v = d × t","v = d / t","v = t / d","v = d + t"],c:1,e:"v = d / t. Par exemple, 100 m parcourus en 10 s donnent 10 m/s."},
+  {m:"Physique-Chimie",n:2,q:"Quels sont les deux types de circuits électriques ?",a:["Ouvert et fermé","Série et dérivation","Positif et négatif","Long et court"],c:1,e:"Dans un circuit en série, les dipôles se suivent ; en dérivation, ils sont en parallèle."},
+  {m:"Physique-Chimie",n:2,q:"Que signifie la formule P = m × g ?",a:["Poids = masse × gravité","Pression = masse × volume","Puissance = masse × vitesse","Périmètre = mesure × grandeur"],c:0,e:"P est le poids en newtons, m la masse en kg et g la pesanteur (environ 9,8 N/kg sur Terre)."},
+  {m:"Physique-Chimie",n:2,q:"Dans quel état les particules d'une matière sont-elles les plus éloignées ?",a:["Solide","Liquide","Gaz","Solide et liquide"],c:2,e:"Dans un gaz, les particules sont très éloignées et se déplacent librement."},
+  {m:"Physique-Chimie",n:3,q:"Quelle est la loi d'Ohm ?",a:["U = R × I","U = R / I","U = R + I","U = I / R"],c:0,e:"La tension U est égale à la résistance R multipliée par l'intensité I."},
+  {m:"Physique-Chimie",n:3,q:"Qu'est-ce qu'un ion ?",a:["Un atome chargé électriquement","Un noyau sans électrons","Un neutron isolé","Un type de molécule organique"],c:0,e:"Un ion est un atome qui a gagné ou perdu des électrons, donc chargé."},
+  {m:"Physique-Chimie",n:3,q:"Quelle est la différence entre une réaction chimique et un changement d'état ?",a:["La réaction crée de nouvelles substances, pas le changement d'état","Aucune","Le changement d'état crée de nouvelles substances","La réaction ne change jamais la matière"],c:0,e:"Lors d'un changement d'état, la substance reste la même : seule sa forme change."},
+  {m:"Physique-Chimie",n:3,q:"Quelle est la formule de la masse volumique ?",a:["ρ = m / V","ρ = m × V","ρ = V / m","ρ = m + V"],c:0,e:"La masse volumique est la masse divisée par le volume."},
+
+  // ANGLAIS
+  {m:"Anglais",n:1,q:"Comment dit-on « pomme » en anglais ?",a:["Apple","Pear","Orange","Banana"],c:0,e:"« Apple » signifie pomme."},
+  {m:"Anglais",n:1,q:"Comment dit-on « chat » en anglais ?",a:["Dog","Cat","Bird","Fish"],c:1,e:"« Cat » signifie chat ; « dog » signifie chien."},
+  {m:"Anglais",n:1,q:"Complète : « She ___ a student. »",a:["am","is","are","be"],c:1,e:"Avec « she » (3e personne du singulier), on utilise « is »."},
+  {m:"Anglais",n:1,q:"Comment dit-on « bonjour » en anglais ?",a:["Goodbye","Hello","Please","Thanks"],c:1,e:"« Hello » signifie bonjour."},
+  {m:"Anglais",n:2,q:"Quel est le prétérit de « to go » ?",a:["Goed","Gone","Went","Goes"],c:2,e:"« Go » est irrégulier : prétérit « went », participe passé « gone »."},
+  {m:"Anglais",n:2,q:"Comment dit-on « Je suis allé au cinéma hier » ?",a:["I went to the cinema yesterday","I go to the cinema yesterday","I have gone to cinema yesterday","I will go to the cinema yesterday"],c:0,e:"Avec « yesterday », on utilise le prétérit : « went »."},
+  {m:"Anglais",n:2,q:"Quel est le pluriel de « child » ?",a:["Children","Childs","Childes","Childen"],c:0,e:"« Child » a un pluriel irrégulier : « children »."},
+  {m:"Anglais",n:2,q:"Quelle est la traduction de « to borrow » ?",a:["Emprunter","Prêter","Rendre","Acheter"],c:0,e:"« To borrow » signifie emprunter ; « to lend » signifie prêter."},
+  {m:"Anglais",n:3,q:"Que signifie « I have been living here for two years » ?",a:["Je vis ici depuis deux ans","J'ai vécu ici deux ans","Je vivrai ici deux ans","Je veux vivre ici"],c:0,e:"Le present perfect continuous exprime une action commencée dans le passé et toujours en cours."},
+  {m:"Anglais",n:3,q:"Quelle est la forme correcte : « If I ___ rich, I would travel. » ?",a:["were","am","be","was"],c:0,e:"Dans une phrase hypothétique, on emploie « were » avec « I »."},
+  {m:"Anglais",n:3,q:"Quel est le participe passé de « to write » ?",a:["Wrote","Written","Writed","Writing"],c:1,e:"« To write » : prétérit « wrote », participe passé « written »."},
+  {m:"Anglais",n:3,q:"Quelle est la traduction de « It's been raining all day » ?",a:["Il pleut depuis toute la journée","Il a plu toute la journée","Il pleuvait toute la journée","Il pleuvra toute la journée"],c:0,e:"Le present perfect continuous décrit une action commencée et qui dure encore."},
+
+  // EMC
+  {m:"EMC",n:1,q:"Combien de temps dure le mandat présidentiel en France ?",a:["3 ans","5 ans","7 ans","10 ans"],c:1,e:"Depuis 2000, le mandat présidentiel est de 5 ans (quinquennat)."},
+  {m:"EMC",n:1,q:"Quelle est la devise de la République française ?",a:["Liberté, Égalité, Fraternité","Travail, Famille, Patrie","Unité, Force, Progrès","Honneur, Patrie, Courage"],c:0,e:"La devise est inscrite dans la Constitution de 1958."},
+  {m:"EMC",n:1,q:"Combien de couleurs compte le drapeau français ?",a:["2","3","4","5"],c:1,e:"Le drapeau tricolore est bleu, blanc et rouge."},
+  {m:"EMC",n:1,q:"À partir de quel âge peut-on voter en France ?",a:["16 ans","18 ans","21 ans","20 ans"],c:1,e:"La majorité électorale est fixée à 18 ans."},
+  {m:"EMC",n:2,q:"Qu'est-ce que la laïcité ?",a:["Une religion d'État","La séparation de l'Église et de l'État","L'interdiction des religions","Une fête nationale"],c:1,e:"La laïcité garantit la liberté de conscience et l'égalité de tous devant la loi."},
+  {m:"EMC",n:2,q:"Quel est le rôle du Défenseur des droits ?",a:["Créer des lois","Protéger les droits des citoyens","Diriger l'armée","Gérer les impôts"],c:1,e:"C'est une autorité indépendante qui aide les personnes dont les droits ne sont pas respectés."},
+  {m:"EMC",n:2,q:"Quel texte fondamental organise aujourd'hui les institutions françaises ?",a:["La Constitution de 1958","Le Code pénal","La Déclaration de 1789","Le Traité de Rome"],c:0,e:"La Constitution de la Ve République, adoptée en 1958, organise les pouvoirs publics."},
+  {m:"EMC",n:2,q:"Quel est le rôle du Conseil constitutionnel ?",a:["Contrôler la conformité des lois à la Constitution","Juger les crimes","Voter le budget","Nommer les ministres"],c:0,e:"Il vérifie que les lois respectent la Constitution."},
+  {m:"EMC",n:3,q:"Quelle est la différence entre une loi et un décret ?",a:["La loi est votée par le Parlement, le décret est pris par le pouvoir exécutif","Aucune différence","Le décret est voté par les citoyens","La loi est prise par le maire"],c:0,e:"La loi est votée par le Parlement ; le décret relève du pouvoir exécutif."},
+  {m:"EMC",n:3,q:"Combien de députés siègent à l'Assemblée nationale ?",a:["577","348","925","200"],c:0,e:"L'Assemblée nationale compte 577 députés."},
+  {m:"EMC",n:3,q:"Qu'est-ce que le suffrage universel direct ?",a:["Le vote de tous les citoyens majeurs pour élire directement leurs représentants","Le vote réservé aux élus","Le tirage au sort","Le vote à main levée"],c:0,e:"Chaque citoyen majeur vote directement pour élire ses représentants."},
+  {m:"EMC",n:3,q:"Quel principe répartit le pouvoir entre législatif, exécutif et judiciaire ?",a:["La séparation des pouvoirs","La laïcité","Le fédéralisme","La souveraineté populaire absolue"],c:0,e:"Théorisée par Montesquieu, la séparation des pouvoirs évite la concentration du pouvoir."}
+];
+
+// ===== RÉGLAGES =====
+const NIVEAUX = {
+  1: { nom: "🌱 Facile",    temps: 30 },
+  2: { nom: "⚡ Moyen",     temps: 25 },
+  3: { nom: "🔥 Difficile", temps: 20 }
+};
+const AVATARS = ["🦊", "🐼", "🐯", "🦁"];
+const COULEURS_JOUEURS = ["#667eea", "#f5576c", "#43e97b", "#ff9800"];
+
+// ===== VARIABLES GLOBALES =====
+let questionsMelangees = [];
+let currentIndex = 0;
+let timer = null;
+let timeLeft = 25;
+let tempsQuestion = 25;
+let answered = false;
+let matiereSelectionnee = "toutes";
+let niveauChoisi = 1;
+let nbJoueurs = 1;
+let joueurs = [];
+let joueurActuel = 0;
+let resultatsParMatiere = {};
+
+// ===== OUTILS =====
+function melanger(tableau) {
+  const t = [...tableau];
+  for (let i = t.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [t[i], t[j]] = [t[j], t[i]];
+  }
+  return t;
+}
+
+// Mélange aussi les réponses, pour que la bonne réponse ne soit pas toujours au même endroit
+function preparerQuestion(q) {
+  const ordre = melanger(q.a.map((_, i) => i));
+  return { ...q, answers: ordre.map(i => q.a[i]), correct: ordre.indexOf(q.c) };
+}
+
+// ===== CHOIX : JOUEURS, NIVEAU, MATIÈRE =====
+document.querySelectorAll('#nbJoueursChoix .nb-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#nbJoueursChoix .nb-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    nbJoueurs = parseInt(btn.dataset.nb);
+    genererChampsNoms();
+  });
+});
+
+document.querySelectorAll('#niveauChoix .nb-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#niveauChoix .nb-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    niveauChoisi = parseInt(btn.dataset.niveau);
+  });
+});
+
+document.querySelectorAll('.matiere-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.matiere-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    matiereSelectionnee = btn.dataset.matiere;
+  });
+});
+
+function genererChampsNoms() {
+  const container = document.getElementById('nomsJoueurs');
+  container.innerHTML = '';
+  for (let i = 0; i < nbJoueurs; i++) {
+    const div = document.createElement('div');
+    div.className = 'joueur-input';
+    div.innerHTML = `
+      <span class="avatar">${AVATARS[i]}</span>
+      <input type="text" id="nomJoueur${i}" placeholder="Nom du joueur ${i + 1}" value="Joueur ${i + 1}" maxlength="15">`;
+    container.appendChild(div);
+  }
+}
+genererChampsNoms();
+
+// ===== DÉMARRAGE =====
+function startQuiz() {
+  joueurs = [];
+  for (let i = 0; i < nbJoueurs; i++) {
+    const input = document.getElementById(`nomJoueur${i}`);
+    const nom = (input.value.trim() || `Joueur ${i + 1}`).substring(0, 15);
+    joueurs.push({ nom, avatar: AVATARS[i], couleur: COULEURS_JOUEURS[i], score: 0, correct: 0, total: 0 });
+  }
+
+  // Sélection des questions : la matière choisie, le niveau choisi d'abord,
+  // puis les niveaux voisins seulement si la banque manque de questions.
+  // Une question n'apparaît jamais deux fois dans une même partie.
+  const base = matiereSelectionnee === "toutes" ? QUESTIONS : QUESTIONS.filter(q => q.m === matiereSelectionnee);
+  const nbTotal = Math.floor(Math.min(10 * nbJoueurs, base.length) / nbJoueurs) * nbJoueurs;
+  const principales = melanger(base.filter(q => q.n === niveauChoisi));
+  const autres = melanger(base.filter(q => q.n !== niveauChoisi))
+    .sort((x, y) => Math.abs(x.n - niveauChoisi) - Math.abs(y.n - niveauChoisi));
+  questionsMelangees = [...principales, ...autres].slice(0, nbTotal).map(preparerQuestion);
+
+  tempsQuestion = NIVEAUX[niveauChoisi].temps;
+  currentIndex = 0;
+  joueurActuel = 0;
+  resultatsParMatiere = {};
+
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('quizScreen').classList.remove('hidden');
+  document.getElementById('bilanScreen').classList.add('hidden');
+
+  afficherPanneauJoueurs();
+  loadQuestion();
+}
+
+// ===== PANNEAU JOUEURS =====
+function afficherPanneauJoueurs() {
+  const panel = document.getElementById('joueursPanel');
+  panel.innerHTML = '';
+  joueurs.forEach((j, i) => {
+    const card = document.createElement('div');
+    card.className = 'joueur-card' + (i === joueurActuel ? ' active' : '');
+    card.style.borderColor = i === joueurActuel ? j.couleur : 'transparent';
+    card.innerHTML = `<span class="avatar-small">${j.avatar}</span><span>${j.nom}</span><span class="pts">⭐ ${j.score}</span>`;
+    panel.appendChild(card);
+  });
+}
+
+// ===== AFFICHER UNE QUESTION =====
+function loadQuestion() {
+  answered = false;
+  const q = questionsMelangees[currentIndex];
+  const j = joueurs[joueurActuel];
+
+  document.getElementById('feedbackBox').classList.add('hidden');
+  document.getElementById('explicationBox').classList.add('hidden');
+  document.getElementById('nextBtn').classList.add('hidden');
+
+  if (!resultatsParMatiere[q.m]) resultatsParMatiere[q.m] = { correct: 0, total: 0 };
+  resultatsParMatiere[q.m].total++;
+
+  const indic = document.getElementById('tourIndicator');
+  indic.innerHTML = `${j.avatar} <strong>Au tour de ${j.nom} !</strong>`;
+  indic.style.background = j.couleur + "22";
+  indic.style.color = j.couleur;
+
+  document.getElementById('matiereTag').textContent = q.m;
+  document.getElementById('niveauTag').textContent = NIVEAUX[q.n].nom;
+  document.getElementById('questionCounter').textContent = `Question ${currentIndex + 1}/${questionsMelangees.length}`;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('progressFill').style.width = `${(currentIndex / questionsMelangees.length) * 100}%`;
+
+  const container = document.getElementById('answersContainer');
+  container.innerHTML = '';
+  q.answers.forEach((answer, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = `${String.fromCharCode(65 + i)}. ${answer}`;
+    btn.onclick = () => checkAnswer(i, btn);
+    container.appendChild(btn);
+  });
+
+  afficherPanneauJoueurs();
+  startTimer();
+}
+
+// ===== TIMER =====
+function startTimer() {
+  clearInterval(timer);
+  timeLeft = tempsQuestion;
+  const badge = document.getElementById('timerBadge');
+  badge.textContent = `⏱ ${timeLeft}s`;
+  badge.classList.remove('warning');
+
+  timer = setInterval(() => {
+    timeLeft--;
+    badge.textContent = `⏱ ${timeLeft}s`;
+    if (timeLeft <= 10) badge.classList.add('warning');
+    if (timeLeft <= 0) {
+      clearInterval(timer);
+      if (!answered) timeoutAnswer();
+    }
+  }, 1000);
+}
+
+function timeoutAnswer() {
+  answered = true;
+  const q = questionsMelangees[currentIndex];
+  joueurs[joueurActuel].total++;
+  document.querySelectorAll('.answer-btn').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.correct) btn.classList.add('correct');
+  });
+  showFeedback(false, "⏰ Temps écoulé !");
+  afficherExplication(q);
+  preparerBoutonSuivant();
+}
+
+// ===== VÉRIFIER LA RÉPONSE =====
+function checkAnswer(selected, btn) {
+  if (answered) return;
+  answered = true;
+  clearInterval(timer);
+
+  const q = questionsMelangees[currentIndex];
+  const j = joueurs[joueurActuel];
+  const buttons = document.querySelectorAll('.answer-btn');
+  buttons.forEach(b => b.disabled = true);
+  j.total++;
+
+  if (selected === q.correct) {
+    btn.classList.add('correct');
+    j.score += q.n * 10;   // 10, 20 ou 30 points selon le niveau de la question
+    j.correct++;
+    resultatsParMatiere[q.m].correct++;
+    showFeedback(true, `🎉 Bravo ${j.nom} ! Bonne réponse ! (+${q.n * 10} pts)`);
+    createConfetti();
+  } else {
+    btn.classList.add('wrong');
+    buttons[q.correct].classList.add('correct');
+    showFeedback(false, `❌ Oups ${j.nom} ! La bonne réponse était : ${q.answers[q.correct]}`);
+  }
+
+  afficherPanneauJoueurs();
+  afficherExplication(q);
+  preparerBoutonSuivant();
+}
+
+function afficherExplication(q) {
+  const box = document.getElementById('explicationBox');
+  box.innerHTML = `<strong>💡 Explication :</strong> ${q.e}`;
+  box.classList.remove('hidden');
+}
+
+function preparerBoutonSuivant() {
+  const nextBtn = document.getElementById('nextBtn');
+  nextBtn.classList.remove('hidden');
+  nextBtn.textContent = currentIndex === questionsMelangees.length - 1
+    ? "🏁 Voir le classement final" : "➡️ Question suivante";
+}
+
+function showFeedback(isGood, message) {
+  const fb = document.getElementById('feedbackBox');
+  fb.textContent = message;
+  fb.className = 'feedback ' + (isGood ? 'good' : 'bad');
+}
+
+// ===== QUESTION SUIVANTE =====
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= questionsMelangees.length) {
+    showBilan();
+  } else {
+    joueurActuel = (joueurActuel + 1) % nbJoueurs;
+    loadQuestion();
+  }
+}
+
+// ===== BILAN FINAL =====
+function showBilan() {
+  clearInterval(timer);
+  document.getElementById('quizScreen').classList.add('hidden');
+  document.getElementById('bilanScreen').classList.remove('hidden');
+
+  const classement = [...joueurs].sort((a, b) => b.score - a.score);
+  const gagnant = classement[0];
+
+  if (nbJoueurs === 1) {
+    const percent = Math.round((gagnant.correct / Math.max(gagnant.total, 1)) * 100);
+    let stars = 1;
+    if (percent >= 90) stars = 5;
+    else if (percent >= 70) stars = 4;
+    else if (percent >= 50) stars = 3;
+    else if (percent >= 30) stars = 2;
+    document.getElementById('starsDisplay').textContent = '⭐'.repeat(stars) + '☆'.repeat(5 - stars);
+    const messages = {
+      5: { emoji: "🏆", msg: "INCROYABLE ! Tu es un vrai champion ! Continue comme ça !" },
+      4: { emoji: "🌟", msg: "Excellent travail ! Tu maîtrises très bien tes matières !" },
+      3: { emoji: "😊", msg: "Bien joué ! Encore un petit effort pour être au top !" },
+      2: { emoji: "💪", msg: "Pas mal ! Révise encore un peu et tu progresseras vite !" },
+      1: { emoji: "📚", msg: "Courage ! Continue à réviser, tu vas y arriver !" }
+    };
+    document.getElementById('bilanEmoji').textContent = messages[stars].emoji;
+    document.getElementById('messageFinal').textContent = messages[stars].msg;
+    document.getElementById('bilanTitle').textContent = "Bilan de tes révisions";
+  } else {
+    document.getElementById('starsDisplay').textContent = "🏆🏆🏆";
+    document.getElementById('bilanEmoji').textContent = "🎊";
+    document.getElementById('bilanTitle').textContent = "Classement final";
+    document.getElementById('messageFinal').textContent =
+      `🏆 Félicitations ${gagnant.avatar} ${gagnant.nom} ! Tu remportes la partie avec ${gagnant.score} points !`;
+  }
+
+  const podium = document.getElementById('podium');
+  podium.innerHTML = '';
+  if (nbJoueurs > 1) {
+    const ordre = [];
+    if (classement.length >= 2) ordre.push({ j: classement[1], pos: 2 });
+    ordre.push({ j: classement[0], pos: 1 });
+    if (classement.length >= 3) ordre.push({ j: classement[2], pos: 3 });
+    if (classement.length >= 4) ordre.push({ j: classement[3], pos: 4 });
+    ordre.forEach(({ j, pos }) => {
+      const div = document.createElement('div');
+      div.className = `podium-item p${pos}`;
+      div.innerHTML = `
+        <div class="avatar-podium">${j.avatar}</div>
+        <div class="nom-podium">${j.nom}</div>
+        <div class="score-podium" style="color:${j.couleur}">${j.score} pts</div>
+        <div class="barre">${pos}${pos === 1 ? 'er' : 'e'}</div>`;
+      podium.appendChild(div);
+    });
+  }
+
+  const totalCorrect = joueurs.reduce((s, j) => s + j.correct, 0);
+  const totalQuestions = joueurs.reduce((s, j) => s + j.total, 0);
+  const totalScore = joueurs.reduce((s, j) => s + j.score, 0);
+  const percent = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+
+  document.getElementById('finalScore').textContent = totalScore;
+  document.getElementById('finalCorrect').textContent = `${totalCorrect}/${totalQuestions}`;
+  document.getElementById('finalPercent').textContent = `${percent}%`;
+
+  const detailsJ = document.getElementById('detailsJoueurs');
+  detailsJ.innerHTML = '';
+  classement.forEach((j, index) => {
+    const div = document.createElement('div');
+    div.className = 'matiere-detail';
+    const medaille = ['🥇', '🥈', '🥉'][index] || '🎖️';
+    div.innerHTML = `<span>${medaille} ${j.avatar} ${j.nom}</span><strong>${j.correct}/${j.total} · ${j.score} pts</strong>`;
+    detailsJ.appendChild(div);
+  });
+
+  const detailBox = document.getElementById('matiereDetails');
+  detailBox.innerHTML = '';
+  Object.keys(resultatsParMatiere).forEach(m => {
+    const r = resultatsParMatiere[m];
+    const div = document.createElement('div');
+    div.className = 'matiere-detail';
+    div.innerHTML = `<span>${m}</span><strong>${r.correct}/${r.total} ✅</strong>`;
+    detailBox.appendChild(div);
+  });
+
+  createConfetti();
+}
+
+// ===== RECOMMENCER =====
+function restartQuiz() {
+  document.getElementById('bilanScreen').classList.add('hidden');
+  document.getElementById('startScreen').classList.remove('hidden');
+  genererChampsNoms();
+}
+
+// ===== CONFETTIS =====
+function createConfetti() {
+  const colors = ['#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b', '#fa709a'];
+  for (let i = 0; i < 30; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + 'vw';
+      c.style.top = '-20px';
+      c.style.background = colors[Math.floor(Math.random() * colors.length)];
+      c.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 3000);
+    }, i * 50);
+  }
+}
+</script>
+</body>
+</html>
