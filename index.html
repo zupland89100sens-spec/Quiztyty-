@@ -139,6 +139,10 @@
       <button class="matiere-btn" data-matiere="Physique-Chimie">⚗️ Physique</button>
       <button class="matiere-btn" data-matiere="Anglais">🇬🇧 Anglais</button>
       <button class="matiere-btn" data-matiere="EMC">⚖️ EMC</button>
+      <button class="matiere-btn" data-matiere="Espagnol">🇪🇸 Espagnol</button>
+      <button class="matiere-btn" data-matiere="Allemand">🇩🇪 Allemand</button>
+      <button class="matiere-btn" data-matiere="Technologie">🤖 Techno</button>
+      <button class="matiere-btn" data-matiere="Arts plastiques">🎨 Arts</button>
     </div>
 
     <button class="main-btn" onclick="startQuiz()">🚀 C'est parti !</button>
@@ -300,7 +304,63 @@ const QUESTIONS = [
   {m:"EMC",n:3,q:"Quelle est la différence entre une loi et un décret ?",a:["La loi est votée par le Parlement, le décret est pris par le pouvoir exécutif","Aucune différence","Le décret est voté par les citoyens","La loi est prise par le maire"],c:0,e:"La loi est votée par le Parlement ; le décret relève du pouvoir exécutif."},
   {m:"EMC",n:3,q:"Combien de députés siègent à l'Assemblée nationale ?",a:["577","348","925","200"],c:0,e:"L'Assemblée nationale compte 577 députés."},
   {m:"EMC",n:3,q:"Qu'est-ce que le suffrage universel direct ?",a:["Le vote de tous les citoyens majeurs pour élire directement leurs représentants","Le vote réservé aux élus","Le tirage au sort","Le vote à main levée"],c:0,e:"Chaque citoyen majeur vote directement pour élire ses représentants."},
-  {m:"EMC",n:3,q:"Quel principe répartit le pouvoir entre législatif, exécutif et judiciaire ?",a:["La séparation des pouvoirs","La laïcité","Le fédéralisme","La souveraineté populaire absolue"],c:0,e:"Théorisée par Montesquieu, la séparation des pouvoirs évite la concentration du pouvoir."}
+  {m:"EMC",n:3,q:"Quel principe répartit le pouvoir entre législatif, exécutif et judiciaire ?",a:["La séparation des pouvoirs","La laïcité","Le fédéralisme","La souveraineté populaire absolue"],c:0,e:"Théorisée par Montesquieu, la séparation des pouvoirs évite la concentration du pouvoir."},
+
+  // ESPAGNOL
+  {m:"Espagnol",n:1,q:"Comment dit-on « bonjour » en espagnol ?",a:["Hola","Adiós","Gracias","Por favor"],c:0,e:"« Hola » signifie bonjour. « Adiós » signifie au revoir."},
+  {m:"Espagnol",n:1,q:"Comment dit-on « merci » en espagnol ?",a:["Gracias","Hola","Adiós","Lunes"],c:0,e:"« Gracias » signifie merci."},
+  {m:"Espagnol",n:1,q:"Comment dit-on « chat » en espagnol ?",a:["Perro","Gato","Pájaro","Pez"],c:1,e:"« Gato » signifie chat ; « perro » signifie chien."},
+  {m:"Espagnol",n:1,q:"Comment dit-on « pomme » en espagnol ?",a:["Manzana","Pera","Naranja","Plátano"],c:0,e:"« Manzana » signifie pomme. « Pera » = poire."},
+  {m:"Espagnol",n:2,q:"Quelle est la conjugaison de « ser » (être) à la 1re personne du singulier ?",a:["Soy","Eres","Es","Somos"],c:0,e:"Yo soy : je suis."},
+  {m:"Espagnol",n:2,q:"Comment dit-on « Je m'appelle Marie » en espagnol ?",a:["Me llamo Marie","Tengo Marie","Soy llamo Marie","Llamo me Marie"],c:0,e:"« Me llamo » signifie « je m'appelle »."},
+  {m:"Espagnol",n:2,q:"Quel est le pluriel de « libro » (livre) ?",a:["Libros","Libroes","Libres","Librós"],c:0,e:"Au pluriel, on ajoute -s : libro → libros."},
+  {m:"Espagnol",n:2,q:"Comment dit-on « Je voudrais un café » en espagnol ?",a:["Quisiera un café","Soy un café","Tengo café ayer","Hablo café"],c:0,e:"« Quisiera » est le conditionnel de politesse de « querer » : je voudrais."},
+  {m:"Espagnol",n:3,q:"Que signifie « Ayer fui al mercado » ?",a:["Hier, je suis allé au marché","Demain, j'irai au marché","Je vais souvent au marché","Hier, je suis allé à la plage"],c:0,e:"« Ayer » = hier, « fui » = je suis allé (passé simple de « ir »)."},
+  {m:"Espagnol",n:3,q:"Dans « Espero que vengas », quel est le mode du verbe ?",a:["Indicatif","Subjonctif","Impératif","Conditionnel"],c:1,e:"Après « espero que » (j'espère que), le verbe est au subjonctif."},
+  {m:"Espagnol",n:3,q:"Quel est le féminin de « amigo » (ami) ?",a:["Amiga","Amigua","Amigos","Amigoa"],c:0,e:"Le féminin de « amigo » est « amiga »."},
+  {m:"Espagnol",n:3,q:"Comment dit-on « il pleut » en espagnol ?",a:["Llueve","Nieva","Hace sol","Truena"],c:0,e:"« Llueve » signifie il pleut. « Nieva » = il neige."},
+
+  // ALLEMAND
+  {m:"Allemand",n:1,q:"Comment dit-on « bonjour » en allemand ?",a:["Hallo","Tschüss","Danke","Bitte"],c:0,e:"« Hallo » signifie bonjour. « Tschüss » signifie au revoir."},
+  {m:"Allemand",n:1,q:"Comment dit-on « s'il vous plaît » en allemand ?",a:["Bitte","Danke","Hallo","Ja"],c:0,e:"« Bitte » signifie s'il vous plaît ; « Danke » signifie merci."},
+  {m:"Allemand",n:1,q:"Comment dit-on « oui » en allemand ?",a:["Nein","Ja","Doch","Vielleicht"],c:1,e:"« Ja » signifie oui ; « Nein » signifie non."},
+  {m:"Allemand",n:1,q:"Comment dit-on « chat » en allemand ?",a:["Hund","Katze","Vogel","Fisch"],c:1,e:"« Die Katze » signifie le chat ; « der Hund » signifie le chien."},
+  {m:"Allemand",n:2,q:"Comment dit-on « Je m'appelle Paul » en allemand ?",a:["Ich heiße Paul","Ich habe Paul","Ich gehe Paul","Ich mag Paul"],c:0,e:"« Ich heiße » signifie « je m'appelle »."},
+  {m:"Allemand",n:2,q:"Comment dit-on « la maison » en allemand ?",a:["Das Haus","Die Haus","Der Haus","Das Hause"],c:0,e:"« Das Haus » est neutre : le mot « Haus » prend l'article « das »."},
+  {m:"Allemand",n:2,q:"Quel est le genre de « die Sonne » (le soleil) ?",a:["Masculin","Féminin","Neutre","Pluriel"],c:1,e:"En allemand, « die Sonne » (le soleil) est féminin."},
+  {m:"Allemand",n:2,q:"Que signifie « Ich habe Hunger » ?",a:["J'ai faim","J'ai soif","J'ai froid","Je suis fatigué"],c:0,e:"« Hunger » signifie faim."},
+  {m:"Allemand",n:3,q:"Dans « Ich habe gestern Fußball gespielt », quel est le temps ?",a:["Passé composé","Présent","Futur","Imparfait"],c:0,e:"« habe … gespielt » est un passé composé : j'ai joué hier au football."},
+  {m:"Allemand",n:3,q:"Comment dit-on « Je ne comprends pas » en allemand ?",a:["Ich verstehe nicht","Ich verstehe ja","Ich spreche nicht","Ich weiß nicht"],c:0,e:"« Ich verstehe nicht » signifie je ne comprends pas. « Ich weiß nicht » signifie je ne sais pas."},
+  {m:"Allemand",n:3,q:"Quel est le pluriel de « das Kind » (l'enfant) ?",a:["Die Kinder","Die Kinds","Das Kinder","Der Kinder"],c:0,e:"Le pluriel de « das Kind » est « die Kinder »."},
+  {m:"Allemand",n:3,q:"Que signifie « Wie spät ist es? » ?",a:["Quelle heure est-il ?","Comment ça va ?","Où est-ce ?","Quel âge as-tu ?"],c:0,e:"« Wie spät » signifie « quelle heure »."},
+
+  // TECHNOLOGIE
+  {m:"Technologie",n:1,q:"Quel composant d'un ordinateur effectue les calculs ?",a:["Le processeur","L'écran","Le clavier","La souris"],c:0,e:"Le processeur (CPU) exécute les calculs et les instructions."},
+  {m:"Technologie",n:1,q:"Que signifie « USB » ?",a:["Universal Serial Bus","Ultra Speed Battery","United System Board","Unique Storage Box"],c:0,e:"USB signifie Universal Serial Bus, un port de connexion standard."},
+  {m:"Technologie",n:1,q:"Quel matériau est très utilisé pour les fils électriques ?",a:["Le cuivre","Le bois","Le plastique","Le verre"],c:0,e:"Le cuivre conduit très bien l'électricité."},
+  {m:"Technologie",n:1,q:"Quelle énergie utilise une éolienne ?",a:["L'énergie du vent","L'énergie du soleil","L'énergie de l'eau","L'énergie du charbon"],c:0,e:"Une éolienne transforme l'énergie du vent en électricité."},
+  {m:"Technologie",n:2,q:"Qu'est-ce qu'un capteur ?",a:["Un dispositif qui mesure une grandeur et la transforme en signal","Un moteur électrique","Un écran tactile","Un logiciel de dessin"],c:0,e:"Un capteur mesure par exemple la température, la lumière ou le son."},
+  {m:"Technologie",n:2,q:"Quel est le rôle d'un actionneur ?",a:["Transformer une énergie électrique en mouvement","Mesurer la température","Stocker des données","Afficher du texte"],c:0,e:"Un moteur ou une lampe sont des exemples d'actionneurs."},
+  {m:"Technologie",n:2,q:"Qu'est-ce qu'un cahier des charges ?",a:["Un document qui décrit le besoin et les contraintes d'un produit","Un carnet de notes d'élève","Une facture","Un plan de cours"],c:0,e:"Il précise ce que le produit doit faire et les contraintes à respecter."},
+  {m:"Technologie",n:2,q:"Quel est le rôle d'une carte Arduino ?",a:["Exécuter un programme pour piloter des capteurs et actionneurs","Stocker des films","Imprimer des documents","Remplacer une batterie"],c:0,e:"C'est une petite carte électronique programmable."},
+  {m:"Technologie",n:3,q:"Que fait une boucle « répéter » dans un programme ?",a:["Répète des instructions plusieurs fois","Supprime le programme","Ajoute un capteur","Éteint l'ordinateur"],c:0,e:"Une boucle répète un bloc d'instructions, par exemple 10 fois."},
+  {m:"Technologie",n:3,q:"Qu'est-ce que le système binaire ?",a:["Un système de numération à base 2 (0 et 1)","Un système à base 10","Un langage de programmation","Un type de câble"],c:0,e:"Les ordinateurs n'utilisent que les chiffres 0 et 1."},
+  {m:"Technologie",n:3,q:"Combien de bits contient un octet ?",a:["4","8","16","2"],c:1,e:"Un octet est formé de 8 bits."},
+  {m:"Technologie",n:3,q:"Quelle est l'unité de la puissance électrique ?",a:["Le watt (W)","Le volt (V)","L'ampère (A)","L'ohm (Ω)"],c:0,e:"La puissance s'exprime en watts (W)."},
+
+  // ARTS PLASTIQUES
+  {m:"Arts plastiques",n:1,q:"Quelles sont les trois couleurs primaires ?",a:["Rouge, jaune, bleu","Vert, orange, violet","Noir, blanc, gris","Rouge, vert, bleu"],c:0,e:"Ce sont les couleurs de base qu'on ne peut pas obtenir par mélange."},
+  {m:"Arts plastiques",n:1,q:"Quelle couleur obtient-on en mélangeant du bleu et du jaune ?",a:["Vert","Violet","Orange","Marron"],c:0,e:"Bleu + jaune = vert (mélange soustractif)."},
+  {m:"Arts plastiques",n:1,q:"Qui a peint « La Joconde » ?",a:["Léonard de Vinci","Michel-Ange","Raphaël","Botticelli"],c:0,e:"Léonard de Vinci a peint La Joconde au début du XVIe siècle."},
+  {m:"Arts plastiques",n:1,q:"Qui a peint « Les Tournesols » ?",a:["Monet","Van Gogh","Picasso","Matisse"],c:1,e:"Vincent van Gogh a peint plusieurs séries de tournesols."},
+  {m:"Arts plastiques",n:2,q:"À quel mouvement artistique est associé Claude Monet ?",a:["L'impressionnisme","Le cubisme","Le surréalisme","Le baroque"],c:0,e:"L'impressionnisme privilégie la lumière et les impressions du moment."},
+  {m:"Arts plastiques",n:2,q:"Qu'est-ce que le cubisme ?",a:["Un mouvement qui représente les objets en formes géométriques","Un mouvement de sculpture en marbre","Un style de photographie","Un art uniquement sur papier"],c:0,e:"Picasso et Braque en sont les fondateurs."},
+  {m:"Arts plastiques",n:2,q:"Qu'est-ce qu'une nature morte ?",a:["Un tableau représentant des objets inanimés","Un paysage de montagne","Un portrait","Une scène de bataille"],c:0,e:"Fruits, fleurs ou objets du quotidien en sont les sujets."},
+  {m:"Arts plastiques",n:2,q:"Quelle technique consiste à tracer des traits serrés pour créer des ombres ?",a:["Le lavis","Les hachures","Le collage","Le modelage"],c:1,e:"Plus les traits sont serrés, plus la zone paraît sombre."},
+  {m:"Arts plastiques",n:3,q:"Qu'est-ce que le surréalisme ?",a:["Un mouvement qui explore le rêve et l'inconscient","Un mouvement qui décrit la réalité sociale","Un style de sculpture antique","Une technique de gravure"],c:0,e:"Salvador Dalí et René Magritte en sont des figures célèbres."},
+  {m:"Arts plastiques",n:3,q:"Quel artiste a réalisé la sculpture « Le Penseur » ?",a:["Rodin","Giacometti","Brancusi","Degas"],c:0,e:"Auguste Rodin a réalisé « Le Penseur » en bronze."},
+  {m:"Arts plastiques",n:3,q:"Quelle est la différence entre un tableau figuratif et un tableau abstrait ?",a:["Le figuratif représente des objets reconnaissables, l'abstrait non","Aucune","Le figuratif n'utilise pas de couleurs","L'abstrait représente toujours des animaux"],c:0,e:"L'art abstrait s'éloigne de la représentation du réel."},
+  {m:"Arts plastiques",n:3,q:"Qu'est-ce que le clair-obscur ?",a:["Un fort contraste entre lumière et ombre","Une technique de collage","Un style de dessin au crayon","Une couleur sombre"],c:0,e:"Le Caravage et Rembrandt l'ont utilisé de façon célèbre."}
 ];
 
 // ===== RÉGLAGES =====
